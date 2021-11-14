@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -37,6 +38,7 @@ public class ShortestPathActivity extends AppCompatActivity {
 
     private CustomAppGraph graph;                   // 액티비티 간에 공유되는 데이터를 담는 클래스
 
+    private static final String TAG = "MinTimePathFragment";// 안지훈 추가
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +63,9 @@ public class ShortestPathActivity extends AppCompatActivity {
         dijkstra(graph.getMap().get(departure), CustomAppGraph.SearchType.MIN_TIME);
         dijkstra(graph.getMap().get(departure), CustomAppGraph.SearchType.MIN_DISTANCE);
         dijkstra(graph.getMap().get(departure), CustomAppGraph.SearchType.MIN_COST);
+
+        //안지훈 추가
+        simplifyPaths();
 
         // 뷰페이저2와 어댑터를 연결 (반드시 TabLayoutMediator 선언 전에 선행되어야 함)
         pager = findViewById(R.id.viewpager);
@@ -198,5 +203,31 @@ public class ShortestPathActivity extends AppCompatActivity {
             return items.size();
         }
     }
+    //알림을 위한 paths 단순화, 버튼 추가, 구간 별 알림     안지훈 작업
+    public ArrayList<String> simplifyPaths() {//시간 저장 리스트로 바꿔야 함
 
+        ArrayList<String> simplePaths = new ArrayList<>();//역 저장할 리스트
+        HashMap<Integer, String> reverseMap = graph.getReverseMap();//path안의 값을 역으로
+        ArrayList<Integer> path = paths.get(0);//단순화 시험용
+        int pathSize = path.size();//path 크기
+
+        Integer departure = path.get(0);//출발역
+        Integer arrival = path.get(pathSize - 2);//종착역
+        Integer cost = path.get(pathSize - 1);//마지막 비용
+
+        String past = reverseMap.get(departure);//환승 체크하기 위해 전역 저장
+        for(Integer s : path) {
+            String current = reverseMap.get(s);
+            if(s == cost) continue;
+            if(s == departure || s == arrival || Integer.parseInt(current) / 100 != Integer.parseInt(past) / 100) {
+                simplePaths.add(current);
+                Log.d(TAG, current);
+            }
+            past = current;
+        }
+        for(String s : simplePaths){
+            Log.d(TAG, s);
+        }
+        return simplePaths;
+    }
 }

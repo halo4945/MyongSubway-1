@@ -1,6 +1,7 @@
 package com.example.myongsubway;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ public class MinTimePathFragment extends Fragment {
     public TextView textView;
     ArrayList<Integer> minTimePath;
     HashMap<Integer, String> reverseMap;
+
 
     public MinTimePathFragment(ArrayList<Integer>path, HashMap<Integer, String> _reverseMap) {
         minTimePath = path;
@@ -41,4 +43,6 @@ public class MinTimePathFragment extends Fragment {
 
         return v;
     }
+
+
 }

@@ -5,16 +5,19 @@ import android.content.res.Configuration;
 import android.util.Log;
 
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.Cell;
 
 // TODO : 그래프, 역 등의 데이터 사용하는 방법 by 이하윤
-/*
-이 클래스는 모든 액티비티에서 접근할 수 있는 데이터를 모아두는 클래스입니다. 
+/**
+이 클래스는 모든 액티비티에서 접근할 수 있는 데이터를 모아두는 클래스입니다.
 모든 코드는 추후 변경 가능합니다. 필요한 기능, 데이터, getter 메소드 등은 다같이 얘기해보고 정하면 좋을 것 같습니다.
+해당 객체는 앱이 실행 시 딱 한번만 생성되기 때문에 모든 액티비티에서 같은 객체를 사용합니다.
 해당 클래스의 데이터를 사용하기 위해선 액티비티에서 해당 클래스의 객체가 필요합니다.
 해당 클래스의 객체는 (CustomAppGraph) getApplicationContext(); 을 통해 얻을 수 있습니다. (따로 변수에 할당하여 사용하는 것을 추천합니다.)
 (좀 더 상세한 사용방법은 ShortestPathActivity.java 의 onCreate() 함수의 초기화 부분을 참고)
@@ -39,13 +42,39 @@ TODO) final int EDGE_COUNT : 간선의 개수를 나타내는 심볼릭 상수, 
         산출 기준은 엑셀파일 stations.xls 의 행의 개수 * 2 입니다. (틀릴 수 있음)
  */
 
+// TODO : 로그인 관련 데이터 사용하는 법
+/**
+초기에 해당 객체가 생성되면 아이디와 비밀번호를 나타내는 email, password 변수가 생성되고 null 을 초기값으로 가집니다.
+
+TODO) 초기에 로그인 시 계정 정보를 설정하기
+    로그인이 성공적으로 된다면 setAccount() 메소드를 통해 현재 앱에 로그인한 계정 정보를 설정할 수 있습니다.
+    또한 파이어베이스 에서 받아온 즐찾 역, 즐찾 경로 리스트들을 인자로 전달받아 setter 를 사용해 초기화합니다.
+
+ TODO) 내부의 즐겨찾는 역, 즐겨찾는 경로 리스트를 변경하기
+    setBookmarkedStation() , setBookmarkedRoute() 의 인자로 바꾸고자 하는 리스트를 전달하여 변경합니다.
+    이때 전달한 리스트로 통째로 변경됩니다.
+ 
+ TODO) 내부의 즐겨찾는 역, 즐겨찾는 경로 리스트를 참조하기
+    getBookmarkedStation() , getBookmarkedRoute() 를 이용해 ArrayList<String> 변수를 얻을 수 있습니다.
+    이때 복사값이 아닌 리스트 자체가 넘어가기 때문에 변경할 수 있습니다. 이왕이면 setter 를 이용해 주세요
+    참고로 반환되는 리스트는 final 이기 때문에 getBookmarkedStation() = new ArrayList<String>() ... 와 같이 직접 대입은 불가능합니다.
+    (여담으로 다른 변수로 getter 의 반환값을 참조하면 대입으로 리스트를 변경할 수 있습니다. 하지만 역시 setter 를 이용해주세요.)
+
+TODO) 현재 로그인 상태인지 확인하기
+    또한 현재 앱이 로그인 상태인지를 확인하기 위해선 isLogined() 메소드를 통해 boolean 으로 확인할 수 있습니다.
+ 
+ TODO) 해당 객체에 저장되어 있는 계정정보 데이터를 지우기
+    clearAccount() 메소드를 통해 아이디, 비밀번호, 두개의 리스트를 초기화할 수 있다.
+*/
+
 // 액티비티 간에 공유되는 데이터를 담는 클래스
 // 그래프 자료구조, 다익스트라 알고리즘에 필요한 데이터를 모아두는 클래스
+// 로그인과 관련된 데이터를 담는 클래스
 public class CustomAppGraph extends Application {
     public enum SearchType {
         MIN_TIME,       // 최소 시간
         MIN_DISTANCE,   // 최소 거리
-        MIN_COST,       // 최소 비용
+        MIN_COST        // 최소 비용
     }
 
     public class Edge {
@@ -68,6 +97,7 @@ public class CustomAppGraph extends Application {
         private String vertex;                          // 역의 이름 (ex. "101")
         private ArrayList<Integer> adjacent;            // 역과 연결된 역을 저장하는 리스트
         private int line;                               // 호선
+        private ArrayList<Integer> lines;               // 호선들
         private boolean toilet;                         // 역 내 화장실 유무
         private String number;                          // 역 전화번호
         private String doorDirection;                   // 내리는 문 방향
@@ -79,6 +109,7 @@ public class CustomAppGraph extends Application {
             adjacent = new ArrayList<Integer>();
             vertex = _vertex;
             line = _line;
+            lines = new ArrayList<Integer>();
         }
 
         // 역과 연결된 역을 등록하는 메소드
@@ -96,26 +127,11 @@ public class CustomAppGraph extends Application {
             nearbyFacilities = _nearbyFacilities.split(",");
         }
 
-        // 디버깅 용 메소드
-        public String getInformation() {
-            String output = vertex + " : " + String.valueOf(toilet) + " " + number + " " + doorDirection + " ";
-            for (String item : stationFacilities) {
-                output += item + " ";
-            }
-            for (String item : nearbyRestaurants) {
-                output += item + " ";
-            }
-            for (String item : nearbyFacilities) {
-                output += item + " ";
-            }
-
-            return output;
-        }
-
         // getter (안쓰는 메소드는 삭제할 예정)
         public String getVertex() { return vertex; }
         public ArrayList<Integer> getAdjacent() { return adjacent; }
         public int getLine() { return line; }
+        public ArrayList<Integer> getLines() { return lines; }
         public boolean getToilet() { return toilet; }
         public String getNumber() { return number; }
         public String getDoorDirection() { return doorDirection; }
@@ -129,8 +145,17 @@ public class CustomAppGraph extends Application {
     private ArrayList<Vertex> vertices;                               // 역의 정보를 저장하는 리스트
     private ArrayList<ArrayList<Edge>> adjacent;                      // 역 사이의 정보를 저장하는 리스트
 
-    private final int STATION_COUNT = 111;       // 역의 개수
-    private final int EDGE_COUNT = 278;          // edge 의 개수 (엑셀의 row * 2)
+    private final int STATION_COUNT = 111;              // 역의 개수
+    private final int EDGE_COUNT = 278;                 // edge 의 개수 (엑셀의 row * 2)
+
+    private String email = null;                        // 로그인에 필요한 아이디
+    private String password = null;                     // 로그인에 필요한 비밀번호
+    private ArrayList<String> bookmarkedStation
+            = new ArrayList<String>();                       // 즐겨찾기에 저장된 역
+    private ArrayList<String> bookmarkedRoute
+            = new ArrayList<String>();                       // 즐겨찾기에 저장된 경로
+
+    private final int LINE_COUNT = 9;                   // 호선의 개수
 
 
     @Override
@@ -142,7 +167,7 @@ public class CustomAppGraph extends Application {
     }
 
     // 초기화, 그래프를 생성하는 함수
-    public void createGraph() {
+    private void createGraph() {
         // 그래프에 필요한 리스트들의 초기화
         adjacent = new ArrayList<ArrayList<Edge>>(EDGE_COUNT);
         vertices = new ArrayList<Vertex>(STATION_COUNT);
@@ -158,10 +183,10 @@ public class CustomAppGraph extends Application {
             vertices.add(null);
         }
 
-        String from, to;    // 엑셀 파일의 0번째와 1번째 셀을 저장하는 변수 (역 이름)
-
         // 엑셀 읽기
         try {
+            String from, to;    // 엑셀 파일의 0번째와 1번째 셀을 저장하는 변수 (역 이름)
+
             // stations.xls 노선도 읽기
             InputStream stationsIs = getBaseContext().getResources().getAssets().open("stations.xls");
             Workbook stationWb = Workbook.getWorkbook(stationsIs);
@@ -170,11 +195,16 @@ public class CustomAppGraph extends Application {
             InputStream dataIs = getBaseContext().getResources().getAssets().open("data.xls");
             Workbook dataWb = Workbook.getWorkbook(dataIs);
 
-            if (stationWb != null && dataWb != null) {
+            // data.xls 역 정보 읽기
+            InputStream linesIs = getBaseContext().getResources().getAssets().open("lines.xls");
+            Workbook linesWb = Workbook.getWorkbook(linesIs);
+
+            if (stationWb != null && dataWb != null && linesWb != null) {
                 Sheet stationsSheet = stationWb.getSheet(0);
                 Sheet dataSheet = dataWb.getSheet(0);
+                Sheet linesSheet = linesWb.getSheet(0);
 
-                if (stationsSheet != null && dataSheet != null) {
+                if (stationsSheet != null && dataSheet != null && linesSheet != null) {
                     // stations.xls 를 읽어서 초기화
                     {
                         int colTotal = stationsSheet.getColumns();
@@ -205,23 +235,15 @@ public class CustomAppGraph extends Application {
 
                             // 현재 from 에 해당하는 역이 등록되지 않았다면 추가하고
                             // from 에 연결된 역에 to 를 추가
-                            if (vertices.get(map.get(from)) == null) {
-                                Log.d("test", from + " is null");
+                            if (vertices.get(map.get(from)) == null)
                                 vertices.set(map.get(from), vFrom);
-                            } else {
-                                Log.d("test", from + " is not null");
-                            }
 
                             vertices.get(map.get(from)).addAdjacent(map.get(to));
 
                             // 현재 to 에 해당하는 역이 등록되지 않았다면 추가하고
                             // to 에 연결된 역에 from 을 추가
-                            if (vertices.get(map.get(to)) == null) {
-                                Log.d("test", to + " is null");
+                            if (vertices.get(map.get(to)) == null)
                                 vertices.set(map.get(to), vTo);
-                            } else {
-                                Log.d("test", to + " is not null");
-                            }
 
                             vertices.get(map.get(to)).addAdjacent(map.get(from));
 
@@ -241,9 +263,7 @@ public class CustomAppGraph extends Application {
                         int rowIndexStart = 1;
                         int rowTotal = dataSheet.getColumn(colTotal - 1).length;
 
-                        int count = 0;          // 배열의 index 를 세기위한 변수
-
-                        // stations.xls 를 읽어서 초기화
+                        // data.xls 를 읽어서 초기화
                         for (int row = rowIndexStart; row < rowTotal; row++) {
                             String index = dataSheet.getCell(0, row).getContents();
                             String toilet = dataSheet.getCell(1, row).getContents();
@@ -255,6 +275,22 @@ public class CustomAppGraph extends Application {
                             vertices.get(map.get(index)).addInformation(toilet, number, doorDirection, stationFacilities, nearbyRestaurants, nearbyFacilities);
                         }
                     }
+
+                    // 추가로 lines.xls 를 읽어서 각 역의 호선 업데이트
+                    {
+                        for (int row = 1; row <= LINE_COUNT; row++) {
+                            int col = 1;
+                            int line = row;
+                            while (true) {
+                                try {
+                                    Cell c = linesSheet.getCell(col++, row);
+                                    vertices.get(map.get(c.getContents())).getLines().add(line);
+                                } catch (Exception e) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -263,7 +299,87 @@ public class CustomAppGraph extends Application {
         }
     }
 
-    // getter
+    /* TODO : 디버깅용 코드
+    void printLines() {
+        for (Vertex vertex : vertices) {
+            String output = vertex.getVertex() + " 인접역 : ";
+            for (int index : vertex.getAdjacent()) {
+                output += reverseMap.get(index) + " ";
+            }
+            output += "호선 : ";
+            for (int line : vertex.getLines()) {
+                output += line + " ";
+            }
+
+            Log.d("test", output);
+        }
+    }*/
+
+    // 로그인 관련 setter
+    // email 과 password 는 초기에 null 이지만 해당 setter 가 수행되면 email 과 password 는 값이 생기게 된다.
+    // 또한 저장된 역 리스트와 저장된 경로 리스트를 담는다.
+    public boolean setAccount(String _email, String _password, ArrayList<String> _bookmarkedStation, ArrayList<String> _bookmarkedRoute) {
+        if (_email == null || _password == null || _email == "" || _password == "") {
+            return false;
+        }
+
+        email = _email;
+        password = _password;
+        setBookmarkedStation(_bookmarkedStation);
+        setBookmarkedRoute(_bookmarkedRoute);
+
+        return true;
+    }
+
+    // 전달된 리스트로 완전히 대체된다.
+    public void setBookmarkedStation(ArrayList<String> _bookmarkedStation) {
+        if (_bookmarkedStation == null) return;
+
+        // Deep Copy
+        bookmarkedStation.clear();
+
+        for (int i = 0; i < _bookmarkedStation.size(); i++) {
+            bookmarkedStation.add(_bookmarkedStation.get(i));
+        }
+    }
+
+    // 전달된 리스트로 완전히 대체된다.
+    public void setBookmarkedRoute(ArrayList<String> _bookmarkedRoute) {
+        if (_bookmarkedRoute == null) return;
+
+        // Deep Copy
+        bookmarkedRoute.clear();
+
+        for (int i = 0; i < _bookmarkedRoute.size(); i++) {
+            bookmarkedStation.add(_bookmarkedRoute.get(i));
+        }
+    }
+
+    // email 과 password 가 하나라도 null 이면 로그인되지 않은 상태
+    public boolean isLogined() {
+        if (email == null || password == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // 어플에 저장되는 계정 정보를 비운다.
+    public void clearAccount() {
+        email = null;
+        password = null;
+        bookmarkedStation.clear();
+        bookmarkedRoute.clear();
+    }
+
+    // 로그인 관련 getter
+    // getter() 로 얻은 리스트에 직접 대입은 불가능하다.
+    public final ArrayList<String> getBookmarkedStation() {
+        return bookmarkedStation;
+    }
+    public final ArrayList<String> getBookmarkedRoute() { return bookmarkedRoute; }
+
+    // 그래프, 알고리즘 관련 getter
     public ArrayList<Vertex> getVertices() { return vertices; }
     public ArrayList<ArrayList<Edge>> getAdjacent() { return adjacent; }
     public HashMap<String, Integer> getMap() { return map; }

@@ -1,7 +1,5 @@
 package com.example.myongsubway;
 
-
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
@@ -9,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+
 import android.widget.Toast;
 
 import androidx.preference.ListPreference;

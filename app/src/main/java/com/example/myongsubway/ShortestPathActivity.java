@@ -1,16 +1,23 @@
 package com.example.myongsubway;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
@@ -26,7 +33,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class ShortestPathActivity extends AppCompatActivity {
-    private ViewPager2 pager;                   // 뷰페이저
+    private ViewPager2 viewPager;               // 뷰페이저
     private FragmentStateAdapter pagerAdapter;  // 뷰페이저 어댑터
     private TabLayout tabLayout;                // 탭들을 담는 탭 레이아웃
     private final List<String> tabElement = Arrays.asList("최소시간", "최단거리", "최소비용");  // 탭을 채울 텍스트
@@ -34,61 +41,170 @@ public class ShortestPathActivity extends AppCompatActivity {
 
     private String departure, arrival;              // 출발역과 도착역
     private ArrayList<ArrayList<Integer>> paths;    // 출발역 ~ 도착역의 경로를 저장하는 리스트, 순서대로 최소시간, 최단거리, 최소비용의 경로가 저장됨
+    private ArrayList<ArrayList<Integer>> allCosts; // 소요시간, 소요거리, 소요비용을 저장하는 리스트, 순서대로 최소시간, 최단거리, 최소비용의 경우가 저장됨
     private final int TYPE_COUNT = 3;               // SearchType 의 경우의 수 (최소시간, 최단거리, 최소비용)
+
+    private Button bookmarkButton, setAlarmButton;  // 경로 즐겨찾기 버튼, 도착알람 설정 버튼
 
     private CustomAppGraph graph;                   // 액티비티 간에 공유되는 데이터를 담는 클래스
 
-    private static final String TAG = "MinTimePathFragment";// 안지훈 추가
+
+    private ArrayList<Integer> btnBackgrounds;              // 역을 나타내는 버튼들의 background xml 파일의 id를 저장하는 리스트
+    private ArrayList<Integer> lineColors;                  // 호선의 색들을 담고있는 리스트
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shortest_path);
 
         // 초기화
-        graph = (CustomAppGraph) getApplicationContext();       // 액티비티 간에 공유되는 데이터를 담는 클래스의 객체.
+        init();
 
-        paths = new ArrayList<ArrayList<Integer>>(TYPE_COUNT);
-        for (int i = 0; i < TYPE_COUNT; i++) {
-            paths.add(new ArrayList<Integer>());
-        }
+        // 버튼 리스너 설정
+        registerListener();
 
-        // MainActivity 가 전송한 데이터 받기
-        /*Intent intent = getIntent();
-        departure = intent.getStringExtra("departureStation");
-        arrival = intent.getStringExtra("DestinationStation");*/
-        departure = "101";
-        arrival = "204";
+        // 프래그먼트에서 사용할 데이터를 초기화
+        initializeBtnBackgrounds();
+        initializeLineColors();
+
+        // 툴바 설정
+        setToolbar();
 
         // 다익스트라 알고리즘을 통해 경로탐색, 3가지 SearchType 을 모두 수행한다.
         dijkstra(graph.getMap().get(departure), CustomAppGraph.SearchType.MIN_TIME);
         dijkstra(graph.getMap().get(departure), CustomAppGraph.SearchType.MIN_DISTANCE);
         dijkstra(graph.getMap().get(departure), CustomAppGraph.SearchType.MIN_COST);
 
-        //안지훈 추가
-        simplifyPaths();
+        // 뷰페이저2, 탭레이아웃 설정
+        setPagerAndTabLayout();
+    }
 
+    // 초기화하는 메소드
+    private void init() {
+        // 변수  초기화
+        graph = (CustomAppGraph) getApplicationContext();       // 액티비티 간에 공유되는 데이터를 담는 클래스의 객체.
+        if (graph == null) return;
+
+        paths = new ArrayList<ArrayList<Integer>>(TYPE_COUNT);
+        for (int i = 0; i < TYPE_COUNT; i++) {
+            paths.add(new ArrayList<Integer>());
+        }
+
+        allCosts = new ArrayList<ArrayList<Integer>>(TYPE_COUNT);
+        for (int i = 0; i < TYPE_COUNT; i++) {
+            allCosts.add(new ArrayList<Integer>(3));
+        }
+
+        bookmarkButton = findViewById(R.id.bookmarkButton);
+        setAlarmButton = findViewById(R.id.setAlarmButton);
+
+        // MainActivity 가 전송한 데이터 받기
+        Intent intent = getIntent();
+        departure = intent.getStringExtra("departureStation");
+        arrival = intent.getStringExtra("destinationStation");
+        // TODO : 디버깅용 코드
+        if (departure == null) {
+            departure = "101";
+            arrival = "216";
+        }
+    }
+
+    // 툴바를 설정하는 메소드
+    private void setToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("지하철 경로 탐색");
+        toolbar.setTitleTextColor(Color.WHITE);
+        setSupportActionBar(toolbar);
+    }
+
+    // 버튼에 클릭리스너를 등록하는 메소드
+    private void registerListener() {
+        View.OnClickListener onClickListener = new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    case R.id.bookmarkButton:
+
+                        /*if (graph.isLogined())
+                            Log.d("test", "Currently Logined");
+                        else
+                            Log.d("test", "Not Currently Logined");*/
+
+                        break;
+                    case R.id.setAlarmButton:
+                        //Log.d("test", "setAlarmButton is pressed");
+
+
+                        break;
+                }
+            }
+        };
+        
+        bookmarkButton.setOnClickListener(onClickListener);
+        setAlarmButton.setOnClickListener(onClickListener);
+    }
+
+    // 뷰페이저2, 탭레이아웃 설정
+    private void setPagerAndTabLayout() {
         // 뷰페이저2와 어댑터를 연결 (반드시 TabLayoutMediator 선언 전에 선행되어야 함)
-        pager = findViewById(R.id.viewpager);
+        viewPager = findViewById(R.id.viewPager);
         pagerAdapter = new VPAdapter(this);
-        pager.setAdapter(pagerAdapter);
+        viewPager.setAdapter(pagerAdapter);
+        tabLayout = findViewById(R.id.tabLayout);
 
-        // 뷰페이저와 탭레이아웃을 연동
-        tabLayout = findViewById(R.id.tab);
-        new TabLayoutMediator(tabLayout, pager, new TabLayoutMediator.TabConfigurationStrategy() {
+
+        // 뷰페이저2와 탭레이아웃을 연동
+        // 탭과 뷰페이저를 연결, 여기서 새로운 탭을 다시 만드므로 레이아웃에서 꾸미지말고 여기서 꾸며야함
+        new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
             public void onConfigureTab(@NonNull @NotNull TabLayout.Tab tab, int position) {
+                // 탭의 텍스트를 나타낼 텍스트뷰를 만든다.
+                // 텍스트뷰의 정렬, 색을 정하고 탭에 적용시킨다.
                 TextView textView = new TextView(ShortestPathActivity.this);
                 textView.setText(tabElement.get(position));
+                textView.setGravity(Gravity.CENTER);
+                textView.setTextColor(getColor(R.color.tabUnSelectedColor));
+                if (position == 0) textView.setTextColor(getColor(R.color.tabSelectedColor));
                 tab.setCustomView(textView);
             }
         }).attach();
 
-        //액션바 가리기
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+        // 탭이 선택됐을 때의 액션을 설정하는 부분
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) { // 선택 X -> 선택 O
+                TextView textView = (TextView) tab.getCustomView();
+                textView.setTextColor(getColor(R.color.tabSelectedColor));
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) { // 선택 O -> 선택 X
+                TextView textView = (TextView) tab.getCustomView();
+                textView.setTextColor(getColor(R.color.tabUnSelectedColor));
+            }
+
+            public void onTabReselected(TabLayout.Tab tab) { // 선택 O -> 선택 O
+
+            }
+        });
     }
 
-    public void dijkstra(int here, CustomAppGraph.SearchType TYPE) {
+    // 툴바의 액션버튼을 설정하는 메소드
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.quit_menu, menu);
+        return true;
+    }
+
+    // 툴바의 액션버튼이 선택됐을때의 기능을 설정하는 메소드
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        onBackPressed();
+        return true;
+    }
+
+    // 경로를 계산하는 다익스트라 알고리즘
+    private void dijkstra(int here, CustomAppGraph.SearchType TYPE) {
         // 역과 비용을 관리하는 VertexCost 클래스
         class VertexCost implements Comparable<VertexCost> {
             int vertex;     // 역
@@ -114,14 +230,14 @@ public class ShortestPathActivity extends AppCompatActivity {
         // 해당 리스트의 역들은 발견만 한 역일뿐 아직 방문하지 않은 상태이다.
         PriorityQueue<VertexCost> discovered = new PriorityQueue<VertexCost>();
 
-        ArrayList<Integer> best = new ArrayList<Integer>(graph.getEdgeCount());     // 각 역으로 가는 최단거리를 저장하는 리스트
-        ArrayList<Integer> parent = new ArrayList<Integer>(graph.getEdgeCount());   // 각 역의 이전 역을 저장하는 리스트
+        ArrayList<Integer> best = new ArrayList<Integer>(graph.getStationCount());     // 각 역으로 가는 최단거리를 저장하는 리스트
+        ArrayList<Integer> parent = new ArrayList<Integer>(graph.getStationCount());   // 각 역의 이전 역을 저장하는 리스트
 
         // 리스트 초기화
-        for (int i = 0; i < graph.getEdgeCount(); i++) {
+        for (int i = 0; i < graph.getStationCount(); i++) {
             best.add(Integer.MAX_VALUE);
         }
-        for (int i = 0; i < graph.getEdgeCount(); i++) {
+        for (int i = 0; i < graph.getStationCount(); i++) {
             parent.add(-1);
         }
 
@@ -131,7 +247,7 @@ public class ShortestPathActivity extends AppCompatActivity {
         parent.set(here, here);
 
         // 출발역부터 갈 수 있는 모든 정점을 탐색한다.
-        while (discovered.isEmpty() == false) {
+        while (!discovered.isEmpty()) {
             // 발견한 후보 중 cost 가 가장 작은, 방문할 후보를 찾는다.
             VertexCost bestVC = discovered.remove();
 
@@ -176,20 +292,112 @@ public class ShortestPathActivity extends AppCompatActivity {
         // 경로가 저장된 리스트를 뒤집는다.
         Collections.reverse(paths.get(TYPE.ordinal()));
 
-        // path 리스트의 마지막에 총 비용을 추가한다.
-        paths.get(TYPE.ordinal()).add(best.get(graph.getMap().get(arrival)));
+        // 소요시간, 소요거리, 소요비용을 저장한다.
+        calculateAllCosts(paths.get(TYPE.ordinal()), TYPE, best.get(graph.getMap().get(arrival)));
     }
 
+    // 소요시간, 소요거리, 소요비용을 계산하는 메소드
+    private void calculateAllCosts(ArrayList<Integer> path, CustomAppGraph.SearchType TYPE, int best) {
+        switch (TYPE) {
+            case MIN_TIME:
+                allCosts.get(TYPE.ordinal()).add(best);
+                allCosts.get(TYPE.ordinal()).add(calculateElapsed(path, CustomAppGraph.SearchType.MIN_DISTANCE));
+                allCosts.get(TYPE.ordinal()).add(calculateElapsed(path, CustomAppGraph.SearchType.MIN_COST));
+                break;
 
+            case MIN_DISTANCE:
+                allCosts.get(TYPE.ordinal()).add(calculateElapsed(path, CustomAppGraph.SearchType.MIN_TIME));
+                allCosts.get(TYPE.ordinal()).add(best);
+                allCosts.get(TYPE.ordinal()).add(calculateElapsed(path, CustomAppGraph.SearchType.MIN_COST));
+                break;
+
+            case MIN_COST:
+                allCosts.get(TYPE.ordinal()).add(calculateElapsed(path, CustomAppGraph.SearchType.MIN_TIME));
+                allCosts.get(TYPE.ordinal()).add(calculateElapsed(path, CustomAppGraph.SearchType.MIN_DISTANCE));
+                allCosts.get(TYPE.ordinal()).add(best);
+                break;
+        }
+    }
+
+    // 각각의 소요 cost 를 계산하는 메소드
+    private int calculateElapsed(ArrayList<Integer> path, CustomAppGraph.SearchType TYPE) {
+        int output = 0;
+
+        for (int pathIndex = 0; pathIndex < path.size() - 1; pathIndex++) {
+            output += graph.getAdjacent().get(path.get(pathIndex)).get(path.get(pathIndex + 1)).getCost(TYPE);
+        }
+
+        return output;
+    }
+
+    // 역정보 프래그먼트를 띄우는 메소드
+    public void generateStationInformationFragment(CustomAppGraph.Vertex vertex) {
+        // 역정보 프래그먼트를 띄운다.
+        StationInformationFragment frag = new StationInformationFragment(vertex, graph, true);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        transaction.replace(R.id.station_info_fragment_container, frag);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+    
+    // 확대경로 프래그먼트를 띄우는 메소드
+    public void generateStationInformationFragment(ArrayList<Integer> path, ArrayList<Integer> btnBackgrounds) {
+        // 역정보 프래그먼트를 띄운다.
+        ZoomPathFragment frag = new ZoomPathFragment(path, btnBackgrounds, lineColors);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        transaction.replace(R.id.zoom_path_fragment_container, frag);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    // 호선에 따른 역버튼 배경 xml 을 담는 메소드
+    private void initializeBtnBackgrounds() {
+        btnBackgrounds = new ArrayList<Integer>(10);
+        btnBackgrounds.add(-1);
+        btnBackgrounds.add(R.drawable.round_button_1);
+        btnBackgrounds.add(R.drawable.round_button_2);
+        btnBackgrounds.add(R.drawable.round_button_3);
+        btnBackgrounds.add(R.drawable.round_button_4);
+        btnBackgrounds.add(R.drawable.round_button_5);
+        btnBackgrounds.add(R.drawable.round_button_6);
+        btnBackgrounds.add(R.drawable.round_button_7);
+        btnBackgrounds.add(R.drawable.round_button_8);
+        btnBackgrounds.add(R.drawable.round_button_9);
+    }
+
+    // 호선에 따른 색을 담는 메소드
+    private void initializeLineColors() {
+        lineColors = new ArrayList<Integer>(10);
+        lineColors.add(-1);
+        lineColors.add(getResources().getColor(R.color.line1Color, null));
+        lineColors.add(getResources().getColor(R.color.line2Color, null));
+        lineColors.add(getResources().getColor(R.color.line3Color, null));
+        lineColors.add(getResources().getColor(R.color.line4Color, null));
+        lineColors.add(getResources().getColor(R.color.line5Color, null));
+        lineColors.add(getResources().getColor(R.color.line6Color, null));
+        lineColors.add(getResources().getColor(R.color.line7Color, null));
+        lineColors.add(getResources().getColor(R.color.line8Color, null));
+        lineColors.add(getResources().getColor(R.color.line9Color, null));
+
+    }
+
+    // 뷰페이저 어댑터 클래스
     private class VPAdapter extends FragmentStateAdapter {
-        private ArrayList<Fragment> items;
+        private final ArrayList<Fragment> items;
 
         public VPAdapter(FragmentActivity fa) {
             super(fa);
             items = new ArrayList<Fragment>();
-            items.add(new MinTimePathFragment(paths.get(CustomAppGraph.SearchType.MIN_TIME.ordinal()), graph.getReverseMap()));
-            items.add(new MinDistancePathFragment(paths.get(CustomAppGraph.SearchType.MIN_DISTANCE.ordinal()), graph.getReverseMap()));
-            items.add(new MinCostPathFragment(paths.get(CustomAppGraph.SearchType.MIN_COST.ordinal()), graph.getReverseMap()));
+            items.add(new MinTimePathFragment(paths.get(CustomAppGraph.SearchType.MIN_TIME.ordinal()),
+                    allCosts.get(CustomAppGraph.SearchType.MIN_TIME.ordinal()), graph, btnBackgrounds, lineColors));
+            items.add(new MinDistancePathFragment(paths.get(CustomAppGraph.SearchType.MIN_DISTANCE.ordinal()),
+                    allCosts.get(CustomAppGraph.SearchType.MIN_DISTANCE.ordinal()), graph, btnBackgrounds, lineColors));
+            items.add(new MinCostPathFragment(paths.get(CustomAppGraph.SearchType.MIN_COST.ordinal()),
+                    allCosts.get(CustomAppGraph.SearchType.MIN_COST.ordinal()), graph, btnBackgrounds, lineColors));
         }
 
         @NonNull
@@ -204,7 +412,7 @@ public class ShortestPathActivity extends AppCompatActivity {
         }
     }
     //알림을 위한 paths 단순화, 버튼 추가, 구간 별 알림     안지훈 작업
-    public ArrayList<String> simplifyPaths() {//시간 저장 리스트로 바꿔야 함
+   /* public ArrayList<String> simplifyPaths() {//시간 저장 리스트로 바꿔야 함
 
         ArrayList<String> simplePaths = new ArrayList<>();//역 저장할 리스트
         HashMap<Integer, String> reverseMap = graph.getReverseMap();//path안의 값을 역으로
@@ -221,13 +429,14 @@ public class ShortestPathActivity extends AppCompatActivity {
             if(s == cost) continue;
             if(s == departure || s == arrival || Integer.parseInt(current) / 100 != Integer.parseInt(past) / 100) {
                 simplePaths.add(current);
-                Log.d(TAG, current);
+                //Log.d(TAG, current);
             }
             past = current;
         }
         for(String s : simplePaths){
-            Log.d(TAG, s);
+            //Log.d(TAG, s);
         }
         return simplePaths;
     }
+*/
 }

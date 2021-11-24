@@ -4,5 +4,8 @@
         <item>기본</item>
         <item>카톡</item>
         <item>카톡카톡</item>
+        <item>beep</item>
+        <item>shortBeep</item>
+        <item>blop</item>
     </string-array>
 </resources>

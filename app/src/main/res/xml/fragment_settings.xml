@@ -21,7 +21,6 @@
             android:title="알림음 선택"
             android:dependency="ring"/>
     </PreferenceCategory>
-
     <PreferenceCategory android:title="오류">
         <Preference
             android:key="e_mail"

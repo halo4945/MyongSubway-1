@@ -9,6 +9,9 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -19,17 +22,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.PriorityQueue;
 
 public class ShortestPathActivity extends AppCompatActivity {
@@ -51,6 +58,8 @@ public class ShortestPathActivity extends AppCompatActivity {
 
     private ArrayList<Integer> btnBackgrounds;              // 역을 나타내는 버튼들의 background xml 파일의 id를 저장하는 리스트
     private ArrayList<Integer> lineColors;                  // 호선의 색들을 담고있는 리스트
+
+    int currentPos = 0;//안지훈
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,19 +140,34 @@ public class ShortestPathActivity extends AppCompatActivity {
                             Log.d("test", "Not Currently Logined");*/
 
                         break;
-                    case R.id.setAlarmButton:
+                    case R.id.setAlarmButton: //안지훈 알람 작업
                         //Log.d("test", "setAlarmButton is pressed");
+                        //alarmManager = (AlramManager) getSystemService(SUBWAY_ALARM);
+                        Integer cost = allCosts.get(currentPos).get(0); //시간
 
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(System.currentTimeMillis() + cost * 1000); //알람 시간
+                        //1000
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.KOREA);
+                        Log.i("format",sdf.format(calendar.getTime()).toString());
+                        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                        if (alarmManager != null) {
+                            Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+                            PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(),
+                                    1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+                            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+
+                            Toast.makeText(getApplicationContext(), sdf.format(calendar.getTime()), Toast.LENGTH_LONG).show();
+                        }
                         break;
                 }
+
             }
         };
-        
         bookmarkButton.setOnClickListener(onClickListener);
         setAlarmButton.setOnClickListener(onClickListener);
     }
-
     // 뷰페이저2, 탭레이아웃 설정
     private void setPagerAndTabLayout() {
         // 뷰페이저2와 어댑터를 연결 (반드시 TabLayoutMediator 선언 전에 선행되어야 함)
@@ -175,12 +199,14 @@ public class ShortestPathActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) { // 선택 X -> 선택 O
                 TextView textView = (TextView) tab.getCustomView();
                 textView.setTextColor(getColor(R.color.tabSelectedColor));
+                currentPos = tab.parent.getSelectedTabPosition();//안지훈
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) { // 선택 O -> 선택 X
                 TextView textView = (TextView) tab.getCustomView();
                 textView.setTextColor(getColor(R.color.tabUnSelectedColor));
+
             }
 
             public void onTabReselected(TabLayout.Tab tab) { // 선택 O -> 선택 O
@@ -411,32 +437,5 @@ public class ShortestPathActivity extends AppCompatActivity {
             return items.size();
         }
     }
-    //알림을 위한 paths 단순화, 버튼 추가, 구간 별 알림     안지훈 작업
-   /* public ArrayList<String> simplifyPaths() {//시간 저장 리스트로 바꿔야 함
 
-        ArrayList<String> simplePaths = new ArrayList<>();//역 저장할 리스트
-        HashMap<Integer, String> reverseMap = graph.getReverseMap();//path안의 값을 역으로
-        ArrayList<Integer> path = paths.get(0);//단순화 시험용
-        int pathSize = path.size();//path 크기
-
-        Integer departure = path.get(0);//출발역
-        Integer arrival = path.get(pathSize - 2);//종착역
-        Integer cost = path.get(pathSize - 1);//마지막 비용
-
-        String past = reverseMap.get(departure);//환승 체크하기 위해 전역 저장
-        for(Integer s : path) {
-            String current = reverseMap.get(s);
-            if(s == cost) continue;
-            if(s == departure || s == arrival || Integer.parseInt(current) / 100 != Integer.parseInt(past) / 100) {
-                simplePaths.add(current);
-                //Log.d(TAG, current);
-            }
-            past = current;
-        }
-        for(String s : simplePaths){
-            //Log.d(TAG, s);
-        }
-        return simplePaths;
-    }
-*/
 }

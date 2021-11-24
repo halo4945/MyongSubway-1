@@ -8,7 +8,9 @@ import androidx.fragment.app.FragmentTransaction;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +29,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * SigninActivity
@@ -52,6 +56,7 @@ public class SignInActivity extends AppCompatActivity {
     public TextView signUp;                         // 회원가입 프래그먼트로 이동
     public ArrayList<String> bookmarkedStation;     // "즐겨찾는 역" 데이터를 저장
     public ArrayList<String> bookmarkedRoute;       // "즐겨찾는 경로" 데이터를 저장
+    public Map<String, Object> bookmarkedMap;       // 유저 즐겨찾기 정보 저장
 
     private FragmentManager fragmentManager;        // 프래그먼트를 다루는 매니저
     private SignUpFragment SignUpFragment;
@@ -79,10 +84,23 @@ public class SignInActivity extends AppCompatActivity {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        loadSearchData();
+
         // 로그인 버튼 리스너
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(getEmail().isEmpty()){
+                    email.setError("이메일을 입력해주세요");
+                    email.requestFocus();
+                    return;
+                }
+
+                if(getPassword().isEmpty()){
+                    password.setError("비밀번호를 입력해주세요");
+                    password.requestFocus();
+                    return;
+                }
                 mAuth.signInWithEmailAndPassword(getEmail(), getPassword()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull @NotNull Task<AuthResult> task) {
@@ -104,14 +122,14 @@ public class SignInActivity extends AppCompatActivity {
                                             System.out.println("DocumentSnapshot data: " + document.getData());
                                             bookmarkedStation = (ArrayList) document.get("즐겨찾는 역");
                                             bookmarkedRoute = (ArrayList) document.get("즐겨찾는 경로");
-                                            System.out.println(bookmarkedStation);
-                                            System.out.println(bookmarkedRoute);
                                             ((CustomAppGraph) getApplicationContext()).setAccount(getEmail(), getPassword(), bookmarkedStation, bookmarkedRoute);
+                                            saveSearchData();
                                         } else {
                                             // 없으면 빈 배열 채로 이동
                                             System.out.println("No such document");
                                         }
                                         // 메인 액티비티로 이동
+                                        Toast.makeText(SignInActivity.this, "로그인에 성공하였습니다.", Toast.LENGTH_SHORT).show();
                                         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                         startActivity(intent);
                                     } else {
@@ -120,6 +138,10 @@ public class SignInActivity extends AppCompatActivity {
                                     }
                                 }
                             });
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Toast.makeText(SignInActivity.this, "로그인에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                            password.setText(null);
                         }
                     }
                 });
@@ -159,7 +181,25 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
     }
+    public void saveSearchData(){
 
+        SharedPreferences sp = getSharedPreferences("savedid", MODE_PRIVATE);
+        SharedPreferences.Editor mEdit= sp.edit();
+
+        mEdit.remove("savedid");
+        mEdit.putString("savedid",getEmail());
+
+        mEdit.commit();
+    }
+
+    public void loadSearchData(){
+
+        SharedPreferences prefs = getSharedPreferences("savedid", MODE_PRIVATE);
+
+         setEmail(prefs.getString("savedid", null));
+
+    }
+    void setEmail(String s){ email.setText(s); }
     String getEmail(){ return email.getText().toString(); }
     String getPassword(){ return password.getText().toString(); }
 }

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import jxl.Sheet;
 import jxl.Workbook;
@@ -74,7 +75,8 @@ public class CustomAppGraph extends Application {
     public enum SearchType {
         MIN_TIME,       // 최소 시간
         MIN_DISTANCE,   // 최소 거리
-        MIN_COST        // 최소 비용
+        MIN_COST,       // 최소 비용
+        MIN_TRANSFER    // 최소 환승
     }
 
     public class Edge {
@@ -154,9 +156,9 @@ public class CustomAppGraph extends Application {
             = new ArrayList<String>();                       // 즐겨찾기에 저장된 역
     private ArrayList<String> bookmarkedRoute
             = new ArrayList<String>();                       // 즐겨찾기에 저장된 경로
-
+    private Map<String, Object> bookmarkedMap
+            = new HashMap<>();
     private final int LINE_COUNT = 9;                   // 호선의 개수
-
 
     @Override
     public void onCreate() {
@@ -351,8 +353,14 @@ public class CustomAppGraph extends Application {
         bookmarkedRoute.clear();
 
         for (int i = 0; i < _bookmarkedRoute.size(); i++) {
-            bookmarkedStation.add(_bookmarkedRoute.get(i));
+            bookmarkedRoute.add(_bookmarkedRoute.get(i));
         }
+    }
+
+    // 전달받은 두 개의 리스트로 해시 맵을 생성한다.
+    public void setBookmarkedMap(HashMap<String, Object> _bookmarkedMap) {
+        _bookmarkedMap.put("즐겨찾는 역", getBookmarkedStation());
+        _bookmarkedMap.put("즐겨찾는 경로", getBookmarkedRoute());
     }
 
     // email 과 password 가 하나라도 null 이면 로그인되지 않은 상태
@@ -373,11 +381,14 @@ public class CustomAppGraph extends Application {
     }
 
     // 로그인 관련 getter
+    public String getEmail(){return email;}
+
     // getter() 로 얻은 리스트에 직접 대입은 불가능하다.
     public final ArrayList<String> getBookmarkedStation() {
         return bookmarkedStation;
     }
     public final ArrayList<String> getBookmarkedRoute() { return bookmarkedRoute; }
+    public final Map<String, Object> getBookmarkedMap() {   return bookmarkedMap;   }
 
     // 그래프, 알고리즘 관련 getter
     public ArrayList<Vertex> getVertices() { return vertices; }

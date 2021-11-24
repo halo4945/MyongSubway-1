@@ -1,7 +1,10 @@
 package com.example.myongsubway;
 
 import android.app.Activity;
+import android.app.Application;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 public class BackPressHandler {
     private Activity mainactivity;
@@ -10,7 +13,6 @@ public class BackPressHandler {
     public BackPressHandler(Activity _activity) {
         mainactivity = _activity;
     }
-
     public void onBackPressed(){
         if(System.currentTimeMillis()> backPressedTime + 1800){
             backPressedTime =System.currentTimeMillis();
@@ -18,7 +20,8 @@ public class BackPressHandler {
             return;
         }
         if(System.currentTimeMillis() <= backPressedTime + 1800){
-            mainactivity.finish();
+            ActivityCompat.finishAffinity(mainactivity);
+            System.exit(0);
         }
     }
 }

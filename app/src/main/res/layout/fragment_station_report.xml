@@ -9,158 +9,166 @@
     android:clickable="true"
     tools:context=".StationReportFragment">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="10">
 
-        <Button
-            android:id="@+id/fragment_report_opaque"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="548dp"
-            android:background="#00FFFFFF" />
-
-        <Button
-            android:id="@+id/fragment_report_tourist"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#00472A2A"
-            android:backgroundTint="@null"
-            android:text="주변 식당\n시설"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:translationX="-90dp"
-            android:translationY="-5dp"
-            app:icon="@drawable/ic_restuarent"
-            app:iconGravity="top"
-            app:iconPadding="0dp"
-            app:iconSize="50dp"
-            app:iconTint="#2196F3" />
+            android:layout_weight="10">
 
-        <Button
-            android:id="@+id/fragment_report_bookmark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#00472A2A"
-            android:backgroundTint="@null"
-            android:text="즐겨찾기"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:translationX="90dp"
-            android:translationY="-8dp"
-            app:icon="@drawable/ic_bookmark"
-            app:iconGravity="top"
-            app:iconPadding="0dp"
-            app:iconSize="50dp"
-            app:iconTint="#2196F3" />
+            <Button
+                android:id="@+id/fragment_report_opaque"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00FFFFFF" />
 
-        <Button
-            android:id="@+id/fragment_report_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#00472A2A"
-            android:backgroundTint="@null"
-            android:text="닫기"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:translationY="-80dp"
-            app:icon="@drawable/ic_exit"
-            app:iconGravity="top"
-            app:iconPadding="0dp"
-            app:iconSize="50dp"
-            app:iconTint="#EC5959" />
+            <Button
+                android:id="@+id/fragment_report_close"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_white_ripple"
+                android:backgroundTint="@null"
+                android:text="닫기"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:translationY="20dp"
+                app:icon="@drawable/ic_exit"
+                app:iconGravity="top"
+                app:iconPadding="0dp"
+                app:iconSize="50dp"
+                app:iconTint="#EC5959" />
 
-        <Button
-            android:id="@+id/fragment_report_desti"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#00472A2A"
-            android:backgroundTint="@null"
-            android:text="도착역"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:translationX="60dp"
-            android:translationY="70dp"
-            app:icon="@drawable/ic_desti"
-            app:iconGravity="top"
-            app:iconPadding="0dp"
-            app:iconSize="50dp"
-            app:iconTint="#00BCD4" />
+            <Button
+                android:id="@+id/fragment_report_desti"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="#00472A2A"
+                android:backgroundTint="@null"
+                android:text="도착역"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:translationX="70dp"
+                android:translationY="100dp"
+                app:icon="@drawable/ic_desti"
+                app:iconGravity="top"
+                app:iconPadding="0dp"
+                app:iconSize="50dp"
+                app:iconTint="#00BCD4" />
 
-        <Button
-            android:id="@+id/fragment_report_depart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#00472A2A"
-            android:backgroundTint="@null"
-            android:text="출발역"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:translationX="-60dp"
-            android:translationY="70dp"
-            app:icon="@drawable/ic_depart"
-            app:iconGravity="top"
-            app:iconPadding="0dp"
-            app:iconSize="50dp"
-            app:iconTint="#00BCD4" />
+            <Button
+                android:id="@+id/fragment_report_depart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="#00472A2A"
+                android:backgroundTint="@null"
+                android:text="출발역"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:translationX="-70dp"
+                android:translationY="100dp"
+                app:icon="@drawable/ic_depart"
+                app:iconGravity="top"
+                app:iconPadding="0dp"
+                app:iconSize="50dp"
+                app:iconTint="#00BCD4" />
 
-        <Button
-            android:id="@+id/fragment_report_information"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#00FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:text="역정보"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:translationY="80dp"
-            app:icon="@drawable/ic_info"
-            app:iconGravity="top"
-            app:iconPadding="0dp"
-            app:iconSize="50dp"
-            app:iconTint="#2196F3" />
+            <Button
+                android:id="@+id/fragment_report_information"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_white_ripple"
+                android:backgroundTint="#FFFFFF"
+                android:text="역정보"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:translationY="180dp"
+                app:icon="@drawable/ic_info"
+                app:iconGravity="top"
+                app:iconPadding="0dp"
+                app:iconSize="50dp"
+                app:iconTint="#FFFFFF" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/fragment_report_name"
+                android:layout_width="75dp"
+                android:layout_height="74dp"
+                android:layout_gravity="center"
+                android:background="@drawable/round_button"
+                android:backgroundTint="@null"
+                android:drawableTint="@null"
+                android:text="101역"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:translationY="100dp" />
+
+        </FrameLayout>
 
         <LinearLayout
             android:id="@+id/fragment_report_menulayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="#F3825F"
+            android:layout_weight="0"
+            android:background="@drawable/round_button_main1"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/fragment_report_line"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#32FFFFFF"
-                    android:text="1호선"
-                    android:textAlignment="center"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:layout_height="30dp">
+
+                    <TextView
+                        android:id="@+id/fragment_report_line"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#00FFFFFF"
+                        android:text="1호선"
+                        android:textAlignment="center"
+                        android:textColor="#000000"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/fragment_report_bookmark"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="right"
+                        android:layout_marginRight="25dp"
+                        android:background="@mipmap/ic_star_unselected_foreground"
+                        android:stateListAnimator="@null"
+                        android:text="도착알람 설정"
+                        android:translationY="-10dp" />
+
+                </FrameLayout>
 
                 <LinearLayout
                     android:id="@+id/fragment_report_addlayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal" />
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="horizontal"/>
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:background="#FFFFFF"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:background="@drawable/round_layout"
                 android:orientation="horizontal"
                 android:weightSum="5">
 
@@ -180,7 +188,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="#ECE8E8"
+                    android:background="@drawable/round_layout"
                     android:backgroundTint="@null"
                     android:text="101역"
                     android:textColor="#000000"
@@ -203,6 +211,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="57dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="5dp"
+                android:gravity="center"
                 android:orientation="horizontal">
 
                 <Button
@@ -213,15 +224,15 @@
                     android:background="#00FFFFFF"
                     android:backgroundTint="#00FFFFFF"
                     android:text="내부\n화장실: X"
-                    android:textAlignment="viewStart"
+                    android:textAlignment="center"
                     android:textAllCaps="false"
                     android:textColor="#000000"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    app:icon="@mipmap/ic_toilet_foreground"
-                    app:iconGravity="end"
+                    app:icon="@mipmap/ic_newtoilet_foreground"
+                    app:iconGravity="textStart"
                     app:iconPadding="1dp"
-                    app:iconSize="80dp"
+                    app:iconSize="60dp"
                     app:iconTint="#000000" />
 
                 <Button
@@ -237,27 +248,14 @@
                     android:textColor="#000000"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:icon="@null"
-                    app:iconGravity="end"
+                    app:icon="@mipmap/ic_slidedoor_foreground"
+                    app:iconGravity="textStart"
                     app:iconPadding="1dp"
                     app:iconSize="80dp"
                     app:iconTint="#000000" />
 
             </LinearLayout>
         </LinearLayout>
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/fragment_report_name"
-            android:layout_width="75dp"
-            android:layout_height="74dp"
-            android:layout_gravity="center"
-            android:background="@drawable/round_button"
-            android:backgroundTint="@null"
-            android:drawableTint="@null"
-            android:text="101역"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-    </FrameLayout>
+    </LinearLayout>
 
 </FrameLayout>

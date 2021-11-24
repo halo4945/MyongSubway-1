@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 public class MinCostPathFragment extends Fragment {
     ArrayList<Integer> minCostPath;                 // 최소시간을 기준으로 탐색한 경로
+    ArrayList<Integer> lines;                       // 각 역의 호선을 담고있는 리스트
     ArrayList<Integer> costs;                       // 순서대로 소요시간, 소요거리, 소요비용을 저장하는 리스트
     CustomAppGraph graph;                           // 액티비티 간에 공유되는 데이터를 담는 클래스
     ArrayList<CustomAppGraph.Vertex> vertices;      // 역들의 정보를 담는 클래스인 Vertex 객체들을 저장하는 리스트
@@ -30,18 +31,25 @@ public class MinCostPathFragment extends Fragment {
     ImageButton zoomButton;                         // 확대 버튼
     Button reportButton;                            // 잘못된 정보 신고 버튼
     TextView departureLine, arrivalLine;            // 출발역과 도착역의 호선을 나타내는 텍스트뷰
-    TextView costTime, costDistance, costCost;      // 각각 소요시간, 소요거리, 소요비용을 나타내는 텍스트뷰
+    TextView costTime, costDistance, costCost,
+            costTransfer;                           // 각각 소요시간, 소요거리, 소요비용, 환승횟수를 나타내는  텍스트뷰
     ImageView midLine;                              // 역버튼 사이의 선을 나타내는 뷰
 
-    public MinCostPathFragment(ArrayList<Integer>path, ArrayList<Integer> _costs, CustomAppGraph _graph, ArrayList<Integer> _btnBackgrounds, ArrayList<Integer> _lineColors) {
+    public MinCostPathFragment(ArrayList<Integer> path, ArrayList<Integer> _lines, ArrayList<Integer> _costs, CustomAppGraph _graph, ArrayList<Integer> _btnBackgrounds, ArrayList<Integer> _lineColors) {
         minCostPath = path;
+        lines = _lines;
         costs = _costs;
         graph = _graph;
         btnBackgrounds = _btnBackgrounds;
         lineColors = _lineColors;
 
         vertices = graph.getVertices();
-        initializeBtnBackgrounds();
+    }
+
+    @Override
+    public void onResume() {
+        ((ShortestPathActivity) getActivity()).setPageType(CustomAppGraph.SearchType.MIN_COST);
+        super.onResume();
     }
 
     @Nullable
@@ -83,23 +91,24 @@ public class MinCostPathFragment extends Fragment {
         arrivalButton.setText((arrival.getVertex()));
 
         // 호선의 색에 맞춰 역버튼의 색을 설정한다.
-        departureButton.setBackgroundResource(btnBackgrounds.get(departure.getLine()));
-        arrivalButton.setBackgroundResource(btnBackgrounds.get(arrival.getLine()));
+        departureButton.setBackgroundResource(btnBackgrounds.get(lines.get(0)));
+        arrivalButton.setBackgroundResource(btnBackgrounds.get(lines.get(lines.size() - 1)));
 
         // 호선을 나타내는 텍스트뷰 참조
         departureLine = v.findViewById(R.id.departureLine);
         arrivalLine = v.findViewById(R.id.arrivalLine);
 
         // 호선에 맞춰 텍스트뷰를 설정한다.
-        departureLine.setText(departure.getLine() + "호선");
-        arrivalLine.setText(arrival.getLine() + "호선");
+        departureLine.setText(lines.get(0) + "호선");
+        arrivalLine.setText(lines.get(lines.size() - 1) + "호선");
 
-        // 소요시간, 소요거리, 소요비용을 나타내는 텍스트뷰 참조
+        // 소요시간, 소요거리, 소요비용, 환승횟수를 나타내는 텍스트뷰 참조
         costTime = v.findViewById(R.id.costTime);
         costDistance = v.findViewById(R.id.costDistance);
         costCost = v.findViewById(R.id.costCost);
+        costTransfer = v.findViewById(R.id.costTransfer);
 
-        // 확대, 환승, 잘못된 정보 신고 버튼 참조
+        // 확대, 잘못된 정보 신고, 즐겨찾기 등록 버튼 참조
         zoomButton = v.findViewById(R.id.zoomButton);
         reportButton = v.findViewById(R.id.reportButton);
 
@@ -117,17 +126,19 @@ public class MinCostPathFragment extends Fragment {
                     case R.id.departureButton:
                         ((ShortestPathActivity) getActivity()).generateStationInformationFragment(graph.getVertices().get(minCostPath.get(0)));
                         break;
+
                     case R.id.arrivalButton:
                         ((ShortestPathActivity) getActivity()).generateStationInformationFragment(graph.getVertices().get(minCostPath.get(minCostPath.size() - 1)));
                         break;
+
                     case R.id.zoomButton:
-                        ((ShortestPathActivity) getActivity()).generateStationInformationFragment(minCostPath, btnBackgrounds);
+                        ((ShortestPathActivity) getActivity()).generateStationInformationFragment(minCostPath, btnBackgrounds, CustomAppGraph.SearchType.MIN_COST);
                         break;
 
                     case R.id.reportButton:
                         Intent email = new Intent(Intent.ACTION_SEND);
                         email.setType("plain/text");
-                        String[] address = {"email@address.com"};
+                        String[] address = {"wndtjq0510@gmail.com"};
                         email.putExtra(Intent.EXTRA_EMAIL, address);
                         email.putExtra(Intent.EXTRA_SUBJECT, "");
                         email.putExtra(Intent.EXTRA_TEXT, "잘못된 정보를 입력해주세요.");
@@ -162,8 +173,8 @@ public class MinCostPathFragment extends Fragment {
 
     // midLine 에 그라데이션을 넣는 메소드. 출발역의 호선색 ~ 도착역의 호선색
     private void setMidLineGradient() {
-        int departureLine = Integer.parseInt(departureButton.getText().toString()) / 100;
-        int arrivalLine = Integer.parseInt(arrivalButton.getText().toString()) / 100;
+        int departureLine = lines.get(0);
+        int arrivalLine = lines.get(lines.size() - 1);
 
         GradientDrawable bgShape = (GradientDrawable) midLine.getBackground();
         bgShape.setGradientType(GradientDrawable.LINEAR_GRADIENT);
@@ -171,7 +182,7 @@ public class MinCostPathFragment extends Fragment {
         bgShape.setColors(colors);
     }
 
-    // 소요시간, 소요거리, 소요비용을 텍스트뷰에 적용시킨다.
+    // 소요시간, 소요거리, 소요비용, 환승횟수를 텍스트뷰에 적용시킨다.
     private void setCostTextView() {
         String time = convertTime(costs.get(CustomAppGraph.SearchType.MIN_TIME.ordinal()));
         costTime.setText(time);
@@ -181,6 +192,9 @@ public class MinCostPathFragment extends Fragment {
 
         String cost = convertCost(costs.get(CustomAppGraph.SearchType.MIN_COST.ordinal()));
         costCost.setText(cost);
+
+        String transfer = costs.get(CustomAppGraph.SearchType.MIN_TRANSFER.ordinal()) + "회";
+        costTransfer.setText(transfer);
     }
 
     // 초를 시간, 분, 초로 변환하는 메소드
@@ -249,20 +263,5 @@ public class MinCostPathFragment extends Fragment {
 
         sb.append("원");
         return sb.toString();
-    }
-
-    // 호선에 따른 역버튼 배경 xml 을 담는 메소드
-    private void initializeBtnBackgrounds() {
-        btnBackgrounds = new ArrayList<Integer>(10);
-        btnBackgrounds.add(-1);
-        btnBackgrounds.add(R.drawable.round_button_1);
-        btnBackgrounds.add(R.drawable.round_button_2);
-        btnBackgrounds.add(R.drawable.round_button_3);
-        btnBackgrounds.add(R.drawable.round_button_4);
-        btnBackgrounds.add(R.drawable.round_button_5);
-        btnBackgrounds.add(R.drawable.round_button_6);
-        btnBackgrounds.add(R.drawable.round_button_7);
-        btnBackgrounds.add(R.drawable.round_button_8);
-        btnBackgrounds.add(R.drawable.round_button_9);
     }
 }

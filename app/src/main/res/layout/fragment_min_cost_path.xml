@@ -25,7 +25,7 @@
             android:background="@drawable/simple_line"
             android:layerType="software"
             android:layout_width="0dp"
-            android:layout_height="5dp"
+            android:layout_height="10dp"
             app:layout_constraintLeft_toRightOf="@id/departureButton"
             app:layout_constraintRight_toLeftOf="@id/arrivalButton"
             app:layout_constraintTop_toTopOf="parent"
@@ -90,11 +90,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="소요시간"
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:layout_marginLeft="20dp"
             app:layout_constraintBottom_toTopOf="@id/costTime"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="@id/guideline1"/>
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
             android:id="@+id/costTime"
@@ -102,7 +102,7 @@
             android:layout_height="wrap_content"
             android:text="1분"
             android:textColor="@color/black"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:layout_marginLeft="20dp"
             app:layout_constraintBottom_toTopOf="@id/costDistanceNotice"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -113,7 +113,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="소요거리"
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:layout_marginLeft="20dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/costTime"
@@ -125,7 +125,7 @@
             android:layout_height="wrap_content"
             android:text="2km"
             android:textColor="@color/black"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:layout_marginLeft="20dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/costDistanceNotice"
@@ -136,7 +136,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="소요비용"
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:layout_marginLeft="20dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/costDistance"
@@ -147,13 +147,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="3원"
-            android:textColor="@color/black"
-            android:textSize="30sp"
             android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="25sp"
             android:layout_marginLeft="20dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/costCostNotice"
-            app:layout_constraintBottom_toBottomOf="@id/guideline2"/>
+            app:layout_constraintBottom_toBottomOf="@id/costTransferNotice"/>
+
+        <TextView
+            android:id="@+id/costTransferNotice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="환승횟수"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/costCost"
+            app:layout_constraintBottom_toTopOf="@id/costTransfer"/>
+
+        <TextView
+            android:id="@+id/costTransfer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4회"
+            android:textColor="@color/black"
+            android:textSize="25sp"
+            android:layout_marginLeft="20dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/costTransferNotice"
+            app:layout_constraintBottom_toBottomOf="@id/guideline1"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/reportButton"
@@ -173,14 +196,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_begin="20dp"/>
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_end="160dp"/>
+            app:layout_constraintGuide_end="90dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

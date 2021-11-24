@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,8 +31,11 @@ public class StationInformationFragment extends Fragment implements View.OnClick
     private String mParam1;
     private String mParam2;
 
+    private LinearLayout buildingLayout;
+    private LinearLayout restuarentLayout;
     private LinearLayout adjacentLayout;
     private LinearLayout facilitiesLayout;
+    private LinearLayout lineLayout;
     private TextView vertexName;
     private TextView toilet;
     private TextView door;
@@ -39,7 +43,7 @@ public class StationInformationFragment extends Fragment implements View.OnClick
     private TextView update;
     private TextView airstate;
     private TextView pmq;
-    private Button lineName;
+    private Button reportButton;
     private Button closeButton;
     private CustomAppGraph.Vertex vertex;
     CustomAppGraph graph;
@@ -79,14 +83,18 @@ public class StationInformationFragment extends Fragment implements View.OnClick
         toilet = v.findViewById(R.id.fragment_information_toilet);
         door = v.findViewById(R.id.fragment_information_door);
         number = v.findViewById(R.id.fragment_information_number);
-        lineName= v.findViewById(R.id.fragment_information_line);
+        lineLayout= v.findViewById(R.id.fragment_information_line);
         closeButton = v.findViewById(R.id.fragment_information_close);
+        reportButton = v.findViewById(R.id.fragment_information_reportButton);
         pmq = v.findViewById(R.id.fragment_information_pmq);
         airstate = v.findViewById(R.id.fragment_information_airstate);
         update = v.findViewById(R.id.fragment_information_update);
+        buildingLayout = v.findViewById(R.id.fragment_surrounding_building);
+        restuarentLayout = v.findViewById(R.id.fragment_surrounding_restuarent);
 
         number.setOnClickListener(this);
         closeButton.setOnClickListener(this);
+        reportButton.setOnClickListener(this);
 
         // ShortestPathActivity 에서 생성한 프래그먼트 객체일 때 나가기버튼을 막는다.
         if (isBlockCloseBtn)
@@ -94,7 +102,24 @@ public class StationInformationFragment extends Fragment implements View.OnClick
 
         //역 이름 및 호선이름
         vertexName.setText(vertex.getVertex()+"역");
-        lineName.setText(vertex.getLine()+"호선");
+
+        for(int i=0;i<vertex.getLines().size();i++) {
+            final Button btn = new Button(getContext());
+            btn.setId(i * 10+100);
+            btn.setText(vertex.getLines().get(i).toString());
+            btn.setLayoutParams(new LinearLayout.LayoutParams(120,120 ));
+            if(btn.getText().equals("1")){btn.setBackgroundResource(R.drawable.round_button_main1);}
+            else if((btn.getText().equals("2"))){btn.setBackgroundResource(R.drawable.round_button_main2);}
+            else if((btn.getText().equals("3"))){btn.setBackgroundResource(R.drawable.round_button_main3);}
+            else if((btn.getText().equals("4"))){btn.setBackgroundResource(R.drawable.round_button_main4);}
+            else if((btn.getText().equals("5"))){btn.setBackgroundResource(R.drawable.round_button_main5);}
+            else if((btn.getText().equals("6"))){btn.setBackgroundResource(R.drawable.round_button_main6);}
+            else if((btn.getText().equals("7"))){btn.setBackgroundResource(R.drawable.round_button_main7);}
+            else if((btn.getText().equals("8"))){btn.setBackgroundResource(R.drawable.round_button_main8);}
+            else if((btn.getText().equals("9"))){btn.setBackgroundResource(R.drawable.round_button_main9);}
+            btn.setOnClickListener(this);
+            lineLayout.addView(btn);
+        }
 
         //전화번호
         number.setText(vertex.getNumber());
@@ -120,6 +145,24 @@ public class StationInformationFragment extends Fragment implements View.OnClick
         }
         door.setText(vertex.getDoorDirection());
 
+        facilities = vertex.getNearbyFacilities();
+        for(int i=0;i<facilities.length;i++){
+            TextView tv = new TextView(getContext());
+            tv.setTextColor(Color.rgb(0,0,0));
+            tv.setGravity(Gravity.CENTER);
+            tv.setText(facilities[i]);
+            buildingLayout.addView(tv);
+        }
+
+        facilities = vertex.getNearbyRestaurants();
+        for(int i=0;i<facilities.length;i++){
+            TextView tv = new TextView(getContext());
+            tv.setTextColor(Color.rgb(0,0,0));
+            tv.setGravity(Gravity.CENTER);
+            tv.setText(facilities[i]);
+            restuarentLayout.addView(tv);
+        }
+
         AirThread at = new AirThread();
         at.start();
         return v;
@@ -135,6 +178,15 @@ public class StationInformationFragment extends Fragment implements View.OnClick
             case R.id.fragment_information_number:
                 Intent tt = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"+vertex.getNumber().replace("-","")));
                 startActivity(tt);
+                break;
+            case R.id.fragment_information_reportButton:
+                Intent email = new Intent(Intent.ACTION_SEND);
+                email.setType("plain/text");
+                String[] address = {"email@address.com"};
+                email.putExtra(Intent.EXTRA_EMAIL, address);
+                email.putExtra(Intent.EXTRA_SUBJECT, "");
+                email.putExtra(Intent.EXTRA_TEXT, "잘못된 정보를 입력해주세요.");
+                startActivity(email);
                 break;
         }
     }
@@ -155,6 +207,7 @@ public class StationInformationFragment extends Fragment implements View.OnClick
             int parserEvent = parser.getEventType();
 
             while (parserEvent != XmlPullParser.END_DOCUMENT){
+
                 switch(parserEvent){
                     case XmlPullParser.START_TAG:
                         if(parser.getName().equals("CHECKDATE")){       //업데이트 날짜면 true
@@ -164,7 +217,7 @@ public class StationInformationFragment extends Fragment implements View.OnClick
                             isPMq = true;
                         }
                         if(parser.getName().equals("message")){
-                            airstate.setText("정보를 불러오지 못했습니다.");
+                            airstate.setText("정보를 불러오지 못했습니다.(네트워크 연결 실패)");return;
                         }
                         break;
 
@@ -202,8 +255,16 @@ public class StationInformationFragment extends Fragment implements View.OnClick
                 parserEvent = parser.next();
             }
         } catch(Exception e){
-            airstate.setText("정보를 불러오지 못했습니다    .");
+            airstate.setText("정보를 불러오지 못했습니다.(인터넷 연결를 확인하세요)"); return;
         }
+        if(pMq==null){
+            airstate.post(new Runnable() {
+            @Override
+            public void run() {
+                airstate.setText("정보를 불러오지 못했습니다.(데이터 제공 서버 오류)");return;
+            }
+        });}
+        else{
         double tempPmq = Double.parseDouble(pMq);
         airstate.post(new Runnable() {
             @Override
@@ -214,6 +275,7 @@ public class StationInformationFragment extends Fragment implements View.OnClick
                 else if(tempPmq>=76){airstate.setText("공기가 매우 나쁩니다");airstate.setTextColor(Color.rgb(255,0,0));}
             }
         });
+        }
     }
 
     class AirThread extends Thread{

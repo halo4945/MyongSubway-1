@@ -32,7 +32,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         setPreferencesFromResource(R.xml.fragment_settings, s);
         ringtonePreference = (ListPreference)findPreference("ringtone_list");//벨소리 설정
-        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());//sharedPreference
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());//sharedPreference
         //prefs = getActivity().getSharedPreferences("pref", Context.MODE_PRIVATE);
         if(!prefs.getString("ringtone_list", "").equals("")) {//불러옴
             ringtonePreference.setSummary(prefs.getString("ringtone_list", "기본"));
